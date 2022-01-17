@@ -65,9 +65,23 @@ namespace RecDescent.Parsers
             //This like Parent(res)
             //left child(termTree) right child(epTree)
 
-            var termTree = Term();
-            var epTree = ExprPrime();
-            return res.AddChildren(termTree, epTree);
+            var t = TokenStream.GetToken();
+            if (t.TokenType == TokenType.LeftParen)
+            {
+                if (TokenStream.GetToken().TokenType != TokenType.RightParen)
+                {
+                    throw new ParseException("missing close paren");
+                }
+                var termTree = Term();
+                var epTree = ExprPrime();
+                return res.AddChildren(termTree, epTree);
+            }
+            else
+            {
+                var termTree = Term();
+                var epTree = ExprPrime();
+                return res.AddChildren(termTree, epTree);
+            }
         }
 
         // ExprPrime has alternatives, so we need to
@@ -85,6 +99,11 @@ namespace RecDescent.Parsers
             if (t.TokenType == AddOperator)
             {
                 Match(AddOperator);
+
+                if(TokenStream.GetToken().TokenType == EndOfInput)
+                {
+                    throw new ParseException("Premature end of input");
+                }
                 var termTree = Term();
                 var epTree = ExprPrime();
                 res.AddChildren(new TokenTreeNode(t, termTree, epTree));
@@ -92,6 +111,13 @@ namespace RecDescent.Parsers
             else if (t.TokenType == SubOperator)
             {
                 Match(SubOperator);
+                var termTree = Term();
+                var epTree = ExprPrime();
+                res.AddChildren(new TokenTreeNode(t, termTree, epTree));
+            }
+            else if(t.TokenType == LeftParen)
+            {
+                Match(LeftParen);
                 var termTree = Term();
                 var epTree = ExprPrime();
                 res.AddChildren(new TokenTreeNode(t, termTree, epTree));
@@ -103,37 +129,38 @@ namespace RecDescent.Parsers
         // Term is very much like Expr
         private TokenTreeNode Term()
         {
-            if (TokenStream.GetToken().TokenType != Number && TokenStream.GetToken().TokenType != Identifier)
-            {
-                throw new ParseException("");
-            }
             var res = new TokenTreeNode(TokenType.Term);
+
+            //This like Parent(Term)
+            //left child(Factor) right child(TermPrime)
             var factor = Factor();
-            var treenode = new TokenTreeNode(TokenStream.GetToken());
-            return res.AddChildren(factor,treenode);
+            var term = TermPrime();
+            return res.AddChildren(factor, term);
         }
 
         // TODO:
         // TermPrime is very much like ExprPrime
         private TokenTreeNode TermPrime()
         {
+            //According to expression grammar
+            //This is for * /
             var res = new TokenTreeNode(TokenType.TermPrime);
 
             var t = TokenStream.GetToken();
 
-            if (t.TokenType == AddOperator)
+            if (t.TokenType == MulOperator)
             {
-                Match(AddOperator);
-                var termTree = Term();
-                var epTree = ExprPrime();
-                res.AddChildren(new TokenTreeNode(t, termTree, epTree));
+                Match(MulOperator);
+                var factor = Factor();
+                var termprime = TermPrime();
+                res.AddChildren(new TokenTreeNode(t, factor, termprime));
             }
-            else if (t.TokenType == SubOperator)
+            else if (t.TokenType == DivOperator)
             {
-                Match(SubOperator);
-                var termTree = Term();
-                var epTree = ExprPrime();
-                res.AddChildren(new TokenTreeNode(t, termTree, epTree));
+                Match(DivOperator);
+                var factor = Factor();
+                var termprime = TermPrime();
+                res.AddChildren(new TokenTreeNode(t, factor, termprime));
             }
             return res;
         }
@@ -150,29 +177,19 @@ namespace RecDescent.Parsers
 
             var t = TokenStream.GetToken();
 
-            if (t.TokenType == AddOperator)
-            {
-                Match(AddOperator);
-                var termTree = Term();
-                var epTree = ExprPrime();
-                res.AddChildren(new TokenTreeNode(t, termTree, epTree));
-            }
-            else if (t.TokenType == SubOperator)
-            {
-                Match(SubOperator);
-                var termTree = Term();
-                var epTree = ExprPrime();
-                res.AddChildren(new TokenTreeNode(t, termTree, epTree));
-            }
-            else if (t.TokenType == Number)
+            if (t.TokenType == Number)
             {
                 Match(Number);
                 res.AddChildren(new TokenTreeNode(t));
             }
-            else if (t.TokenType == Identifier)
+            if (t.TokenType == Identifier)
             {
                 Match(Identifier);
                 res.AddChildren(new TokenTreeNode(t));
+            }
+            if (t.TokenType == AddOperator)
+            {
+                throw new ParseException("prefix notation shouldn't work");
             }
             return res;
         }

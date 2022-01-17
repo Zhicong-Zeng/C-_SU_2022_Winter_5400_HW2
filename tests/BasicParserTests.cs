@@ -12,6 +12,8 @@ namespace RecDescent.Tests
         [DataRow("-3", "(Goal (Expr (Term (Factor (-3)))))", "single negative number")]
         [DataRow("x", "(Goal (Expr (Term (Factor (x)))))", "single identifier")]
         [DataRow("3 + x", "(Goal (Expr (Term (Factor (3))) (ExprPrime (+ (Term (Factor (x)))))))", "simple addition")]
+        [DataRow("3 + 2 * 7", "(Goal (Expr (Term (Factor (3))) (ExprPrime (+ (Term (Factor (2)) (TermPrime (* (Factor (7)))))))))", "Test 1")]
+        [DataRow("2 * 7 + 3", "(Goal (Expr (Term (Factor (2)) (TermPrime (* (Factor (7))))) (ExprPrime (+ (Term (Factor (3)))))))", "Test 2")]
         public void ExpectedSuccessTests(string expr, string expected, string label)
         {
             // Arrange
