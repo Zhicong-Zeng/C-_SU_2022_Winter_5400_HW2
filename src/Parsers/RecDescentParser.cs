@@ -62,6 +62,9 @@ namespace RecDescent.Parsers
         {
             var res = new TokenTreeNode(TokenType.Expr);
 
+            //This like Parent(res)
+            //left child(termTree) right child(epTree)
+
             var termTree = Term();
             var epTree = ExprPrime();
             return res.AddChildren(termTree, epTree);
@@ -93,7 +96,6 @@ namespace RecDescent.Parsers
                 var epTree = ExprPrime();
                 res.AddChildren(new TokenTreeNode(t, termTree, epTree));
             }
-
             return res;
         }
 
@@ -101,12 +103,39 @@ namespace RecDescent.Parsers
         // Term is very much like Expr
         private TokenTreeNode Term()
         {
+            if (TokenStream.GetToken().TokenType != Number && TokenStream.GetToken().TokenType != Identifier)
+            {
+                throw new ParseException("");
+            }
+            var res = new TokenTreeNode(TokenType.Term);
+            var factor = Factor();
+            var treenode = new TokenTreeNode(TokenStream.GetToken());
+            return res.AddChildren(factor,treenode);
         }
 
         // TODO:
         // TermPrime is very much like ExprPrime
         private TokenTreeNode TermPrime()
         {
+            var res = new TokenTreeNode(TokenType.TermPrime);
+
+            var t = TokenStream.GetToken();
+
+            if (t.TokenType == AddOperator)
+            {
+                Match(AddOperator);
+                var termTree = Term();
+                var epTree = ExprPrime();
+                res.AddChildren(new TokenTreeNode(t, termTree, epTree));
+            }
+            else if (t.TokenType == SubOperator)
+            {
+                Match(SubOperator);
+                var termTree = Term();
+                var epTree = ExprPrime();
+                res.AddChildren(new TokenTreeNode(t, termTree, epTree));
+            }
+            return res;
         }
 
         // TODO:
@@ -117,6 +146,35 @@ namespace RecDescent.Parsers
         // ParseException!
         private TokenTreeNode Factor()
         {
+            var res = new TokenTreeNode(TokenType.Factor);
+
+            var t = TokenStream.GetToken();
+
+            if (t.TokenType == AddOperator)
+            {
+                Match(AddOperator);
+                var termTree = Term();
+                var epTree = ExprPrime();
+                res.AddChildren(new TokenTreeNode(t, termTree, epTree));
+            }
+            else if (t.TokenType == SubOperator)
+            {
+                Match(SubOperator);
+                var termTree = Term();
+                var epTree = ExprPrime();
+                res.AddChildren(new TokenTreeNode(t, termTree, epTree));
+            }
+            else if (t.TokenType == Number)
+            {
+                Match(Number);
+                res.AddChildren(new TokenTreeNode(t));
+            }
+            else if (t.TokenType == Identifier)
+            {
+                Match(Identifier);
+                res.AddChildren(new TokenTreeNode(t));
+            }
+            return res;
         }
     }
 }

@@ -35,8 +35,51 @@ namespace RecDescent.Scanners
             {
                 // TODO: implement this and populate the `tokens` list.
                 // Should be a lot like the previous homework.
+                // Token(TokenType type, string lexeme)
+                if (Regex.IsMatch(piece,@"\("))
+                {
+                    tokens.Add(new Token(LeftParen, piece));
+                }
+                else if (Regex.IsMatch(piece, @"\)"))
+                {
+                    tokens.Add(new Token(RightParen, piece));
+                }
+                else if(Regex.IsMatch(piece, @"\+"))
+                {
+                    tokens.Add(new Token(AddOperator, piece));
+                }
+                //Just Integer
+                //else if (Regex.IsMatch(piece, @"-?\d+"))
+                //else if (Regex.IsMatch(piece, @"^[-+]?\d*$"))
+                else if (Regex.IsMatch(piece, @"^(\+|-)?\d+$"))
+                {
+                    tokens.Add(new Token(Number, piece));
+                }
+                else if (Regex.IsMatch(piece, @"-"))
+                {
+                    tokens.Add(new Token(SubOperator, piece));
+                }
+                else if (Regex.IsMatch(piece, @"\*"))
+                {
+                    tokens.Add(new Token(MulOperator, piece));
+                }
+                else if (Regex.IsMatch(piece, @"/"))
+                {
+                    tokens.Add(new Token(DivOperator, piece));
+                }
+                else if (Regex.IsMatch(piece, @"%"))
+                {
+                    tokens.Add(new Token(ModOperator, piece));
+                }
+                else if (Regex.IsMatch(piece, @"[A-Za-z]+[A-Za-z0-9_]*"))
+                {
+                    tokens.Add(new Token(Identifier, piece));
+                }
+                else
+                {
+                    throw new UnknownTokenException(piece);
+                }
             }
-
             return new TokenStream(tokens);
         }
     }
